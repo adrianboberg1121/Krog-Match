@@ -2,41 +2,21 @@ const FIELD_MASK=['places.id','places.displayName','places.formattedAddress','pl
 
 const MICHELIN_STARS={
   'frantzén':3,'aira':2,'aloë':2,
-  'adam / albin':1,'adam albin':1,'celeste':1,'dashi':1,'ekstedt':1,'ergo.':1,'ergo':1,'etoile':1,'nour':1,'operakällaren':1,'seafood gastro':1,'sushi sho':1
+  'adam albin':1,'celeste':1,'dashi':1,'ekstedt':1,'ergo':1,'etoile':1,'nour':1,'operakällaren':1,'seafood gastro':1,'sushi sho':1
 };
-const MICHELIN_SELECTED=new Set(['woodstockholm','rolfs kök','babette','etoile','forma','celeste','black milk gastro bar','petri','ärla','essence','brasserie astoria','bar agrikultur','aira','lilla ego','frantzén','ekstedt','hillenberg','ergo.','solen','seafood gastro','triton','oxenstiernan','freyja','leijontornet','minh mat','bord','prospero','nour','restaurang b.a.r.','farang','lux dag för dag','operakällaren','allegrine','nisch','ulla winbladh','matbaren','sushi sho','washoku tomo','dashi','voisine','persona','adam / albin','adam albin']);
-
-const norm=s=>String(s||'').trim().toLowerCase();
-function michelin(name){const n=norm(name);return{stars:MICHELIN_STARS[n]||0,selected:MICHELIN_SELECTED.has(n)||!!MICHELIN_STARS[n]}}
+const MICHELIN_SELECTED=['woodstockholm','rolfs kök','babette','etoile','forma','celeste','black milk gastro bar','petri','ärla','essence','brasserie astoria','bar agrikultur','aira','lilla ego','frantzén','ekstedt','hillenberg','ergo','solen','seafood gastro','triton','oxenstiernan','freyja','leijontornet','minh mat','bord','prospero','nour','restaurang b.a.r.','farang','lux dag för dag','operakällaren','allegrine','nisch','ulla winbladh','matbaren','sushi sho','washoku tomo','dashi','voisine','persona','adam albin'];
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9åäöéü ]/gi,' ').replace(/\b(restaurang|restaurant|ristorante|stockholm|och|and|the)\b/g,' ').replace(/\s+/g,' ').trim();
+function matchName(name,target){const n=norm(name),t=norm(target);return n===t||n.startsWith(t+' ')||n.endsWith(' '+t)}
+function michelin(name){let stars=0;for(const [k,v] of Object.entries(MICHELIN_STARS))if(matchName(name,k)){stars=v;break}const selected=stars>0||MICHELIN_SELECTED.some(k=>matchName(name,k));return{stars,selected}}
 function cuisine(types=[],display=''){
   const joined=(types.join(' ')+' '+display).toLowerCase();
-  const map=[['italian','Italienskt'],['japanese','Japanskt'],['sushi','Japanskt'],['french','Franskt'],['thai','Thailändskt'],['vietnamese','Vietnamesiskt'],['chinese','Kinesiskt'],['korean','Koreanskt'],['indian','Indiskt'],['mexican','Mexikanskt'],['spanish','Spanskt'],['tapas','Spanskt'],['greek','Grekiskt'],['lebanese','Libanesiskt'],['middle_eastern','Mellanöstern'],['mediterranean','Medelhav'],['seafood','Fisk & skaldjur'],['vegetarian','Vegetariskt'],['vegan','Veganskt'],['american','Amerikanskt'],['south_american','Sydamerikanskt'],['african','Afrikanskt'],['scandinavian','Nordiskt'],['swedish','Svenskt']];
+  const map=[['south_american','Sydamerikanskt'],['italian','Italienskt'],['japanese','Japanskt'],['sushi','Japanskt'],['french','Franskt'],['thai','Thailändskt'],['vietnamese','Vietnamesiskt'],['chinese','Kinesiskt'],['korean','Koreanskt'],['indian','Indiskt'],['mexican','Mexikanskt'],['spanish','Spanskt'],['tapas','Spanskt'],['greek','Grekiskt'],['lebanese','Libanesiskt'],['middle_eastern','Mellanöstern'],['mediterranean','Medelhav'],['seafood','Fisk & skaldjur'],['vegetarian','Vegetariskt'],['vegan','Veganskt'],['african','Afrikanskt'],['scandinavian','Nordiskt'],['swedish','Svenskt'],['american','Amerikanskt']];
   for(const [k,v] of map)if(joined.includes(k))return v;
   if(joined.includes('asiat'))return'Asiatiskt';
+  if(joined.includes('fine_dining'))return'Fine dining';
   return'Övrigt';
 }
 function qualityScore(p){const m=michelin(p.displayName?.text);const rating=p.rating||0,count=p.userRatingCount||0;return rating*12+Math.log10(Math.max(1,count))*4+(m.selected?10:0)+m.stars*16}
-
-async function search(apiKey,textQuery){
-  const body={textQuery,includedType:'restaurant',strictTypeFiltering:false,pageSize:20,languageCode:'sv',regionCode:'SE',locationBias:{circle:{center:{latitude:59.3293,longitude:18.0686},radius:14000}}};
-  const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':apiKey,'X-Goog-FieldMask':FIELD_MASK},body:JSON.stringify(body)});
-  const data=await r.json();if(!r.ok)throw new Error(data?.error?.message||`Google Places ${r.status}`);return data.places||[];
-}
-function normalize(p){const name=p.displayName?.text||'Okänd restaurang';const m=michelin(name);return{
-  id:p.id,name,address:p.formattedAddress||'',rating:p.rating||null,userRatingCount:p.userRatingCount||0,priceLevel:p.priceLevel||null,
-  photoName:p.photos?.[0]?.name||null,type:p.primaryTypeDisplayName?.text||'Restaurang',types:p.types||[],cuisine:cuisine(p.types||[],p.primaryTypeDisplayName?.text||''),
-  openNow:p.currentOpeningHours?.openNow,weekdayDescriptions:p.currentOpeningHours?.weekdayDescriptions||[],websiteUri:p.websiteUri||null,googleMapsUri:p.googleMapsUri||null,
-  reviews:(p.reviews||[]).slice(0,3).map(r=>({rating:r.rating||null,text:r.text?.text||r.originalText?.text||'',author:r.authorAttribution?.displayName||'Google-användare',time:r.relativePublishTimeDescription||''})).filter(r=>r.text),
-  michelinStars:m.stars,michelinSelected:m.selected,qualityScore:qualityScore(p)
-}}
-export default async function handler(req,res){
-  res.setHeader('Cache-Control','s-maxage=900, stale-while-revalidate=3600');
-  const apiKey=process.env.GOOGLE_PLACES_API_KEY;if(!apiKey)return res.status(500).json({error:'GOOGLE_PLACES_API_KEY saknas i Vercel'});
-  try{
-    const queries=['bra restauranger i Stockholm','Michelin restauranger Stockholm','populära restauranger Stockholm'];
-    const batches=await Promise.all(queries.map(q=>search(apiKey,q)));
-    const byId=new Map();for(const p of batches.flat())if(p.id&&!byId.has(p.id))byId.set(p.id,p);
-    const restaurants=[...byId.values()].map(normalize).sort((a,b)=>b.qualityScore-a.qualityScore).slice(0,50);
-    res.status(200).json({restaurants,updatedAt:new Date().toISOString()});
-  }catch(e){res.status(502).json({error:e.message||'Kunde inte hämta Google Places'});}
-}
+async function search(apiKey,textQuery){const body={textQuery,includedType:'restaurant',strictTypeFiltering:false,pageSize:20,languageCode:'sv',regionCode:'SE',locationBias:{circle:{center:{latitude:59.3293,longitude:18.0686},radius:14000}}};const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':apiKey,'X-Goog-FieldMask':FIELD_MASK},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data?.error?.message||`Google Places ${r.status}`);return data.places||[]}
+function normalize(p){const name=p.displayName?.text||'Okänd restaurang';const m=michelin(name);return{id:p.id,name,address:p.formattedAddress||'',rating:p.rating||null,userRatingCount:p.userRatingCount||0,priceLevel:p.priceLevel||null,photoName:p.photos?.[0]?.name||null,type:p.primaryTypeDisplayName?.text||'Restaurang',types:p.types||[],cuisine:cuisine(p.types||[],p.primaryTypeDisplayName?.text||''),openNow:p.currentOpeningHours?.openNow,weekdayDescriptions:p.currentOpeningHours?.weekdayDescriptions||[],websiteUri:p.websiteUri||null,googleMapsUri:p.googleMapsUri||null,reviews:(p.reviews||[]).slice(0,3).map(r=>({rating:r.rating||null,text:r.text?.text||r.originalText?.text||'',author:r.authorAttribution?.displayName||'Google-användare',time:r.relativePublishTimeDescription||''})).filter(r=>r.text),michelinStars:m.stars,michelinSelected:m.selected,qualityScore:qualityScore(p)}}
+export default async function handler(req,res){res.setHeader('Cache-Control','s-maxage=900, stale-while-revalidate=3600');const apiKey=process.env.GOOGLE_PLACES_API_KEY;if(!apiKey)return res.status(500).json({error:'GOOGLE_PLACES_API_KEY saknas i Vercel'});try{const queries=['bra restauranger i Stockholm','Michelin restauranger Stockholm','populära restauranger Stockholm'];const batches=await Promise.all(queries.map(q=>search(apiKey,q)));const byId=new Map();for(const p of batches.flat())if(p.id&&!byId.has(p.id))byId.set(p.id,p);const restaurants=[...byId.values()].map(normalize).sort((a,b)=>b.qualityScore-a.qualityScore).slice(0,50);res.status(200).json({restaurants,updatedAt:new Date().toISOString()})}catch(e){res.status(502).json({error:e.message||'Kunde inte hämta Google Places'})}}
