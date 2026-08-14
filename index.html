@@ -10,10 +10,7 @@
 <body>
   <main class="app">
     <header class="topbar">
-      <div>
-        <div class="kicker">STOCKHOLM</div>
-        <h1>KROG MATCH</h1>
-      </div>
+      <div><div class="kicker">STOCKHOLM</div><h1>KROG MATCH</h1></div>
       <button class="saved-btn" id="savedBtn">SPARADE <span id="savedCount">0</span></button>
     </header>
 
@@ -22,56 +19,31 @@
       <button class="chip" data-filter="open">Öppet nu</button>
       <button class="chip" data-filter="4.5">4,5+</button>
       <button class="chip" data-filter="budget">Prisvärd</button>
+      <button class="chip" data-filter="michelin">Michelin</button>
     </section>
-
-    <div class="statusrow">
-      <span id="progressText">Hämtar krogar…</span>
-      <button id="refreshBtn" class="tiny">NY MIX</button>
+    <div class="cuisine-row">
+      <label for="cuisineSelect">Kök</label>
+      <select id="cuisineSelect"><option value="all">Alla kök</option></select>
     </div>
 
-    <section class="stage">
-      <div class="deck" id="deck">
-        <div class="loading">Letar efter bra krogar i Stockholm…</div>
-      </div>
-    </section>
-
-    <div class="actions">
-      <button class="action pass" id="passBtn" aria-label="Pass">✕</button>
-      <button class="action info" id="infoBtn" aria-label="Mer info">i</button>
-      <button class="action like" id="likeBtn" aria-label="Spara">♥</button>
-    </div>
+    <div class="statusrow"><span id="progressText">Hämtar krogar…</span><button id="refreshBtn" class="tiny">NY MIX</button></div>
+    <section class="stage"><div class="deck" id="deck"><div class="loading">Letar efter bra krogar i Stockholm…</div></div></section>
+    <div class="actions"><button class="action pass" id="passBtn">✕</button><button class="action info" id="infoBtn">i</button><button class="action like" id="likeBtn">♥</button></div>
     <div class="hint">Swipe vänster för pass · höger för spara</div>
   </main>
 
-  <div class="sheet" id="detailSheet" aria-hidden="true">
-    <div class="sheet-card">
-      <button class="close" id="closeDetail">✕</button>
-      <div class="detail-photo" id="detailPhoto"></div>
-      <div class="detail-content">
-        <div class="detail-meta" id="detailMeta"></div>
-        <h2 id="detailTitle"></h2>
-        <div class="ratingline" id="detailRating"></div>
-        <p id="detailAddress"></p>
-        <div class="hours" id="detailHours"></div>
-        <div class="detail-actions">
-          <a id="mapsLink" target="_blank" rel="noopener">ÖPPNA I GOOGLE MAPS</a>
-          <a id="websiteLink" target="_blank" rel="noopener">HEMSIDA</a>
-        </div>
-      </div>
+  <div class="sheet" id="detailSheet"><div class="sheet-card">
+    <button class="close" id="closeDetail">✕</button><div class="detail-photo" id="detailPhoto"></div>
+    <div class="detail-content"><div class="detail-meta" id="detailMeta"></div><h2 id="detailTitle"></h2><div class="ratingline" id="detailRating"></div><div id="michelinBadge"></div><p id="detailAddress"></p>
+      <div class="reviews" id="detailReviews"></div><div class="hours" id="detailHours"></div>
+      <div class="detail-actions"><a id="mapsLink" target="_blank" rel="noopener">ÖPPNA I GOOGLE MAPS</a><a id="websiteLink" target="_blank" rel="noopener">HEMSIDA</a></div>
     </div>
-  </div>
+  </div></div>
 
-  <div class="sheet" id="savedSheet" aria-hidden="true">
-    <div class="sheet-card saved-card">
-      <button class="close" id="closeSaved">✕</button>
-      <div class="saved-head">
-        <div class="kicker">DIN LISTA</div>
-        <h2>Sparade krogar</h2>
-      </div>
-      <div id="savedList" class="saved-list"></div>
-      <button id="clearSaved" class="clear-btn">Rensa listan</button>
-    </div>
-  </div>
+  <div class="sheet" id="savedSheet"><div class="sheet-card saved-card">
+    <button class="close" id="closeSaved">✕</button><div class="saved-head"><div class="kicker">DIN LISTA</div><h2>Sparade krogar</h2><p>Listan sparas automatiskt på den här enheten.</p></div>
+    <div id="savedList" class="saved-list"></div><button id="shareSaved" class="share-btn">DELA LISTAN</button><button id="clearSaved" class="clear-btn">Rensa listan</button>
+  </div></div>
 
   <script src="./app.js"></script>
 </body>
