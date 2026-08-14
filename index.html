@@ -10,9 +10,16 @@
 <body>
   <main class="app">
     <header class="topbar">
-      <div><div class="kicker">STOCKHOLM</div><h1>KROG MATCH</h1></div>
+      <div><div class="kicker" id="areaLabel">STOCKHOLM</div><h1>KROG MATCH</h1></div>
       <button class="saved-btn" id="savedBtn">SPARADE <span id="savedCount">0</span></button>
     </header>
+
+    <div class="location-row">
+      <button id="locationBtn" class="location-btn">📍 NÄRA MIG</button>
+      <label class="radius-control" for="radiusSelect"><span>Radie</span><select id="radiusSelect">
+        <option value="500">500 m</option><option value="1000">1 km</option><option value="2000" selected>2 km</option><option value="5000">5 km</option><option value="10000">10 km</option><option value="20000">20 km</option>
+      </select></label>
+    </div>
 
     <section class="filters" aria-label="Filter">
       <button class="chip active" data-filter="all">Alla</button>
@@ -28,7 +35,7 @@
     </div>
 
     <div class="statusrow"><span id="progressText">Hämtar krogar…</span><button id="refreshBtn" class="tiny">NY MIX</button></div>
-    <section class="stage"><div class="deck" id="deck"><div class="loading">Letar efter bra krogar i Stockholm…</div></div></section>
+    <section class="stage"><div class="deck" id="deck"><div class="loading">Letar efter bra krogar…</div></div></section>
     <div class="actions"><button class="action pass" id="passBtn">✕</button><button class="action info" id="infoBtn">i</button><button class="action like" id="likeBtn">♥</button></div>
     <div class="hint">Swipe vänster för pass · höger för spara</div>
   </main>
@@ -42,7 +49,7 @@
   </div></div>
 
   <div class="sheet" id="savedSheet"><div class="sheet-card saved-card">
-    <button class="close" id="closeSaved">✕</button><div class="saved-head"><div class="kicker">DIN LISTA</div><h2>Sparade krogar</h2><p>Listan sparas automatiskt på den här enheten.</p></div>
+    <button class="close" id="closeSaved">✕</button><div class="saved-head"><div class="kicker">DIN LISTA</div><h2>Sparade krogar</h2><p>Listan sparas automatiskt på den här enheten. Öppna en krog i Google Maps och tryck Spara där för att lägga den i en Google Maps-lista.</p></div>
     <div id="savedList" class="saved-list"></div><button id="shareSaved" class="share-btn">DELA LISTAN</button><button id="clearSaved" class="clear-btn">Rensa listan</button>
   </div></div>
 
