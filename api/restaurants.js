@@ -9,6 +9,33 @@ const MICHELIN_BIB=['babette','bar agrikultur','lilla ego','triton','ärla','mat
 const CASUAL_FAVOURITES=['babette','bar agrikultur','lilla ego','triton','ärla','matbaren','allegrine','minh mat','prospero','solen','voisine','bord','forma','lilla ljunggren'];
 const CHAIN_BLOCK=['basta','florentine','pinchos','pong','o learys','olearys','vapiano','brödernas','brodernas','mcdonald','max hamburgare','espresso house','starbucks','taco bar','pitchers','jureskogs','chopchop','zocalo','holy greens','sushi yama','bastard burgers','lion bar','scarpetta','mister york','mae thai','knut'];
 
+const CUISINE_QUERIES={
+  'Japanskt':['japansk restaurang','izakaya','ramen','sushi','omakase','yakitori'],
+  'Italienskt':['italiensk restaurang','osteria','trattoria','pasta restaurang','napolitansk pizza'],
+  'Franskt':['fransk restaurang','fransk bistro','brasserie'],
+  'Kinesiskt':['kinesisk restaurang','sichuan restaurang','dim sum'],
+  'Koreanskt':['koreansk restaurang','korean bbq'],
+  'Vietnamesiskt':['vietnamesisk restaurang','pho restaurang','banh mi'],
+  'Thailändskt':['thailändsk restaurang','thai restaurang'],
+  'Indiskt':['indisk restaurang','indisk fine dining'],
+  'Mexikanskt':['mexikansk restaurang','tacos restaurang'],
+  'Spanskt':['spansk restaurang','tapasbar'],
+  'Grekiskt':['grekisk restaurang'],
+  'Libanesiskt':['libanesisk restaurang'],
+  'Mellanöstern':['mellanöstern restaurang','levantinsk restaurang'],
+  'Medelhav':['medelhavsrestaurang'],
+  'Sydamerikanskt':['sydamerikansk restaurang','peruansk restaurang','argentinsk restaurang'],
+  'Persiskt':['persisk restaurang'],
+  'Nordiskt':['nordisk restaurang','new nordic restaurant'],
+  'Svenskt':['svensk restaurang','modern svensk restaurang','husmanskost restaurang'],
+  'Fisk & skaldjur':['fiskrestaurang','skaldjursrestaurang','seafood restaurant'],
+  'Vegetariskt':['vegetarisk restaurang'],
+  'Veganskt':['vegansk restaurang'],
+  'Afrikanskt':['afrikansk restaurang','etiopisk restaurang','eritreansk restaurang'],
+  'Amerikanskt':['amerikansk restaurang','bbq restaurang'],
+  'Asiatiskt':['asiatisk restaurang','asian fusion restaurant']
+};
+
 const EDITORIAL={
   'lilla ljunggren':[{source:'SvD Krogguiden',year:2026,blurb:'Asiatiska smårätter i avslappnad och livlig miljö; SvD lyfter det som välgjort, personligt och rimligt prissatt.'}],
   'sperling co':[{source:'SvD Krogguiden',year:2026,blurb:'Fick ett mycket starkt mottagande av SvD, med särskilt beröm för kött, hantverk och helhetsnivå.'}],
@@ -26,7 +53,7 @@ function isChain(name){return CHAIN_BLOCK.some(k=>matchName(name,k)||norm(name).
 function casualFlag(p){const name=p.displayName?.text||'';const m=michelin(name);const types=p.types||[];const price=p.priceLevel;return m.bib||CASUAL_FAVOURITES.some(k=>matchName(name,k))||(!types.includes('fine_dining_restaurant')&&['PRICE_LEVEL_INEXPENSIVE','PRICE_LEVEL_MODERATE'].includes(price))}
 function cuisine(types=[],display=''){
   const joined=(types.join(' ')+' '+display).toLowerCase();
-  const map=[['persian','Persiskt'],['south_american','Sydamerikanskt'],['italian','Italienskt'],['japanese','Japanskt'],['sushi','Japanskt'],['french','Franskt'],['thai','Thailändskt'],['vietnamese','Vietnamesiskt'],['chinese','Kinesiskt'],['korean','Koreanskt'],['indian','Indiskt'],['mexican','Mexikanskt'],['spanish','Spanskt'],['tapas','Spanskt'],['greek','Grekiskt'],['lebanese','Libanesiskt'],['middle_eastern','Mellanöstern'],['mediterranean','Medelhav'],['seafood','Fisk & skaldjur'],['vegetarian','Vegetariskt'],['vegan','Veganskt'],['african','Afrikanskt'],['scandinavian','Nordiskt'],['swedish','Svenskt'],['american','Amerikanskt']];
+  const map=[['persian','Persiskt'],['south_american','Sydamerikanskt'],['italian','Italienskt'],['japanese','Japanskt'],['sushi','Japanskt'],['ramen','Japanskt'],['french','Franskt'],['thai','Thailändskt'],['vietnamese','Vietnamesiskt'],['chinese','Kinesiskt'],['korean','Koreanskt'],['indian','Indiskt'],['mexican','Mexikanskt'],['spanish','Spanskt'],['tapas','Spanskt'],['greek','Grekiskt'],['lebanese','Libanesiskt'],['middle_eastern','Mellanöstern'],['mediterranean','Medelhav'],['seafood','Fisk & skaldjur'],['vegetarian','Vegetariskt'],['vegan','Veganskt'],['african','Afrikanskt'],['scandinavian','Nordiskt'],['swedish','Svenskt'],['american','Amerikanskt']];
   for(const [k,v] of map)if(joined.includes(k))return v;
   if(joined.includes('asiat'))return'Asiatiskt';
   if(joined.includes('fine_dining'))return'Fine dining';
@@ -34,6 +61,28 @@ function cuisine(types=[],display=''){
 }
 function qualityScore(p){const m=michelin(p.displayName?.text);const rating=p.rating||0,count=p.userRatingCount||0;return rating*10+Math.log10(Math.max(1,count))*4+(m.selected?5:0)+(m.bib?12:0)+m.stars*14+(casualFlag(p)?4:0)+(editorial(p.displayName?.text).length?6:0)}
 function haversine(lat1,lng1,lat2,lng2){const R=6371000,toRad=x=>x*Math.PI/180;const dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(a))}
-async function search(apiKey,textQuery,center,searchRadius){const body={textQuery,includedType:'restaurant',strictTypeFiltering:false,pageSize:20,languageCode:'sv',locationBias:{circle:{center:{latitude:center.lat,longitude:center.lng},radius:Math.min(Math.max(searchRadius,500),50000)}}};const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':apiKey,'X-Goog-FieldMask':FIELD_MASK},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data?.error?.message||`Google Places ${r.status}`);return data.places||[]}
-function normalize(p,origin=null){const name=p.displayName?.text||'Okänd restaurang';const m=michelin(name);const ed=editorial(name);const distanceMeters=origin&&p.location?Math.round(haversine(origin.lat,origin.lng,p.location.latitude,p.location.longitude)):null;return{id:p.id,name,address:p.formattedAddress||'',latitude:p.location?.latitude??null,longitude:p.location?.longitude??null,distanceMeters,rating:p.rating||null,userRatingCount:p.userRatingCount||0,priceLevel:p.priceLevel||null,photoName:p.photos?.[0]?.name||null,type:p.primaryTypeDisplayName?.text||'Restaurang',types:p.types||[],cuisine:cuisine(p.types||[],p.primaryTypeDisplayName?.text||''),openNow:p.currentOpeningHours?.openNow,weekdayDescriptions:p.currentOpeningHours?.weekdayDescriptions||[],websiteUri:p.websiteUri||null,googleMapsUri:p.googleMapsUri||null,menuSearchUri:`https://www.google.com/search?q=${encodeURIComponent(name+' '+(p.formattedAddress||'')+' meny')}`,reviews:(p.reviews||[]).slice(0,3).map(r=>({rating:r.rating||null,text:r.text?.text||r.originalText?.text||'',author:r.authorAttribution?.displayName||'Google-användare',time:r.relativePublishTimeDescription||''})).filter(r=>r.text),editorial:ed,michelinStars:m.stars,michelinSelected:m.selected,michelinBib:m.bib,casual:casualFlag(p),qualityScore:qualityScore(p)}}
-export default async function handler(req,res){res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=900');const apiKey=process.env.GOOGLE_PLACES_API_KEY;if(!apiKey)return res.status(500).json({error:'GOOGLE_PLACES_API_KEY saknas i Vercel'});try{const lat=Number(req.query?.lat),lng=Number(req.query?.lng),requestedRadius=Number(req.query?.radius);const hasLocation=Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180;const center=hasLocation?{lat,lng}:{lat:59.3293,lng:18.0686};const radius=hasLocation?Math.min(Math.max(Number.isFinite(requestedRadius)?requestedRadius:2000,500),20000):14000;const suffix=hasLocation?'':' Stockholm';const queries=['bra restauranger','Michelin restauranger','Bib Gourmand','matbar','prisvärda restauranger','nya restauranger','kvarterskrog'].map(q=>q+suffix);const batches=await Promise.all(queries.map(q=>search(apiKey,q,center,radius)));const byId=new Map();for(const p of batches.flat())if(p.id&&!byId.has(p.id)&&!isChain(p.displayName?.text)&&!(p.types||[]).includes('food_court'))byId.set(p.id,p);let normalized=[...byId.values()].map(p=>normalize(p,hasLocation?center:null));if(hasLocation)normalized=normalized.filter(p=>Number.isFinite(p.distanceMeters)&&p.distanceMeters<=radius);const quality=normalized.sort((a,b)=>b.qualityScore-a.qualityScore);const casual=quality.filter(p=>p.casual),premium=quality.filter(p=>!p.casual),mixed=[];let ci=0,pi=0;while(mixed.length<70&&(ci<casual.length||pi<premium.length)){if(ci<casual.length)mixed.push(casual[ci++]);if(pi<premium.length)mixed.push(premium[pi++]);if(ci<casual.length)mixed.push(casual[ci++])}const seen=new Set();const restaurants=mixed.filter(p=>!seen.has(p.id)&&seen.add(p.id)).slice(0,70);res.status(200).json({restaurants,updatedAt:new Date().toISOString(),search:{mode:hasLocation?'nearby':'stockholm',radiusMeters:radius}})}catch(e){res.status(502).json({error:e.message||'Kunde inte hämta Google Places'})}}
+async function search(apiKey,textQuery,center,searchRadius){const body={textQuery,includedType:'restaurant',strictTypeFiltering:false,pageSize:20,languageCode:'sv',regionCode:'SE',locationBias:{circle:{center:{latitude:center.lat,longitude:center.lng},radius:Math.min(Math.max(searchRadius,500),50000)}}};const r=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':apiKey,'X-Goog-FieldMask':FIELD_MASK},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data?.error?.message||`Google Places ${r.status}`);return data.places||[]}
+function normalize(p,origin=null,forcedCuisine=null){const name=p.displayName?.text||'Okänd restaurang';const m=michelin(name);const ed=editorial(name);const distanceMeters=origin&&p.location?Math.round(haversine(origin.lat,origin.lng,p.location.latitude,p.location.longitude)):null;return{id:p.id,name,address:p.formattedAddress||'',latitude:p.location?.latitude??null,longitude:p.location?.longitude??null,distanceMeters,rating:p.rating||null,userRatingCount:p.userRatingCount||0,priceLevel:p.priceLevel||null,photoName:p.photos?.[0]?.name||null,type:p.primaryTypeDisplayName?.text||'Restaurang',types:p.types||[],cuisine:forcedCuisine||cuisine(p.types||[],p.primaryTypeDisplayName?.text||''),openNow:p.currentOpeningHours?.openNow,weekdayDescriptions:p.currentOpeningHours?.weekdayDescriptions||[],websiteUri:p.websiteUri||null,googleMapsUri:p.googleMapsUri||null,menuSearchUri:`https://www.google.com/search?q=${encodeURIComponent(name+' '+(p.formattedAddress||'')+' meny')}`,reviews:(p.reviews||[]).slice(0,3).map(r=>({rating:r.rating||null,text:r.text?.text||r.originalText?.text||'',author:r.authorAttribution?.displayName||'Google-användare',time:r.relativePublishTimeDescription||''})).filter(r=>r.text),editorial:ed,michelinStars:m.stars,michelinSelected:m.selected,michelinBib:m.bib,casual:casualFlag(p),qualityScore:qualityScore(p)}}
+export default async function handler(req,res){res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=900');const apiKey=process.env.GOOGLE_PLACES_API_KEY;if(!apiKey)return res.status(500).json({error:'GOOGLE_PLACES_API_KEY saknas i Vercel'});try{
+  const lat=Number(req.query?.lat),lng=Number(req.query?.lng),requestedRadius=Number(req.query?.radius);
+  const requestedCuisine=String(req.query?.cuisine||'').trim();
+  const cuisineSearch=CUISINE_QUERIES[requestedCuisine]||null;
+  const hasLocation=Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180;
+  const center=hasLocation?{lat,lng}:{lat:59.3293,lng:18.0686};
+  const radius=hasLocation?Math.min(Math.max(Number.isFinite(requestedRadius)?requestedRadius:2000,500),20000):14000;
+  const suffix=hasLocation?'':' Stockholm';
+  const baseQueries=['bra restauranger','Michelin restauranger','Bib Gourmand','matbar','prisvärda restauranger','nya restauranger','kvarterskrog'];
+  const queries=(cuisineSearch||baseQueries).map(q=>q+suffix);
+  const batches=await Promise.all(queries.map(q=>search(apiKey,q,center,radius)));
+  const byId=new Map();
+  for(const p of batches.flat())if(p.id&&!byId.has(p.id)&&!isChain(p.displayName?.text)&&!(p.types||[]).includes('food_court'))byId.set(p.id,p);
+  let normalized=[...byId.values()].map(p=>normalize(p,hasLocation?center:null,cuisineSearch?requestedCuisine:null));
+  if(hasLocation)normalized=normalized.filter(p=>Number.isFinite(p.distanceMeters)&&p.distanceMeters<=radius);
+  const quality=normalized.sort((a,b)=>b.qualityScore-a.qualityScore);
+  const casual=quality.filter(p=>p.casual),premium=quality.filter(p=>!p.casual),mixed=[];
+  let ci=0,pi=0;
+  while(mixed.length<90&&(ci<casual.length||pi<premium.length)){if(ci<casual.length)mixed.push(casual[ci++]);if(pi<premium.length)mixed.push(premium[pi++]);if(ci<casual.length)mixed.push(casual[ci++])}
+  const seen=new Set();
+  const restaurants=mixed.filter(p=>!seen.has(p.id)&&seen.add(p.id)).slice(0,90);
+  res.status(200).json({restaurants,updatedAt:new Date().toISOString(),search:{mode:hasLocation?'nearby':'stockholm',radiusMeters:radius,cuisine:requestedCuisine||null,queryCount:queries.length}})
+}catch(e){res.status(502).json({error:e.message||'Kunde inte hämta Google Places'})}}
