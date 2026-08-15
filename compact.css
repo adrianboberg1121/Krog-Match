@@ -1,0 +1,30 @@
+.app{grid-template-rows:auto auto auto 1fr auto auto;gap:9px}
+.topbar{align-items:center;margin-bottom:1px}
+.topbar h1{font-size:27px}
+.saved-btn{min-width:56px;height:38px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:14px}
+.saved-btn span{margin-left:0;font-size:9px;min-width:18px;height:18px}
+.primary-controls{display:grid;grid-template-columns:1fr auto auto;gap:7px;position:relative;z-index:15}
+.location-btn,.radius-control,.filter-panel>summary{height:38px;min-height:38px;border:1px solid var(--line);background:#171715;color:var(--text);border-radius:12px}
+.location-btn{padding:0 11px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.radius-control.compact{padding:0 7px;display:flex;align-items:center}
+.radius-control.compact select{padding:0 2px;font-size:10px}
+.filter-panel{position:relative}
+.filter-panel>summary{list-style:none;display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:10px;font-weight:900;letter-spacing:.04em;cursor:pointer;user-select:none;white-space:nowrap}
+.filter-panel>summary::-webkit-details-marker{display:none}
+.filter-panel[open]>summary{background:var(--text);color:#111;border-color:var(--text)}
+.filter-popover{position:absolute;right:0;top:45px;width:min(360px,calc(100vw - 32px));background:#171715;border:1px solid #35342f;border-radius:20px;padding:15px;box-shadow:0 20px 60px rgba(0,0,0,.55);z-index:30}
+.filter-popover:before{content:"";position:absolute;right:24px;top:-6px;width:11px;height:11px;background:#171715;border-left:1px solid #35342f;border-top:1px solid #35342f;transform:rotate(45deg)}
+.filter-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.filter-head h3{margin:3px 0 0;font-size:20px;letter-spacing:-.035em}
+.filter-head .help-btn{width:32px;height:32px}
+.filter-popover .filters{display:flex;flex-wrap:wrap;overflow:visible;gap:7px}
+.filter-popover .chip{padding:9px 11px;font-size:10px}
+.filter-popover .cuisine-row{margin-top:13px;display:grid;grid-template-columns:auto 1fr}
+.filter-popover .cuisine-row select{padding:10px}
+.statusrow{min-height:24px;padding:0 2px}
+.statusrow .tiny{background:transparent;border:0;padding:4px 0;color:#74716a;font-size:9px}
+.stage{min-height:0}
+.card{border-radius:28px}
+.card-copy{bottom:24px}
+@media(max-width:390px){.primary-controls{grid-template-columns:minmax(0,1fr) auto auto}.location-btn{font-size:9px;padding:0 9px}.filter-panel>summary{padding:0 8px}.radius-control.compact{padding:0 5px}.filter-popover{right:-2px}}
+@media(max-height:720px){.app{grid-template-rows:auto auto auto 1fr auto auto;gap:6px}.primary-controls .location-btn,.primary-controls .radius-control,.filter-panel>summary{height:34px;min-height:34px}.filter-popover{top:40px}.statusrow{min-height:18px}.card-copy{bottom:18px}}
