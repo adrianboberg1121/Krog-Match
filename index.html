@@ -11,30 +11,35 @@
   <main class="app">
     <header class="topbar">
       <div><div class="kicker" id="areaLabel">STOCKHOLM</div><h1><span class="brand-k">K</span>ROOGLE</h1></div>
-      <div class="top-actions"><button class="help-btn" id="helpBtn" aria-label="Så funkar Kroogle">?</button><button class="saved-btn" id="savedBtn">SPARADE <span id="savedCount">0</span></button></div>
+      <button class="saved-btn" id="savedBtn" aria-label="Sparade krogar">♥ <span id="savedCount">0</span></button>
     </header>
 
-    <div class="location-row">
+    <div class="primary-controls">
       <button id="locationBtn" class="location-btn">📍 NÄRA MIG</button>
-      <label class="radius-control" for="radiusSelect"><span>Radie</span><select id="radiusSelect">
+      <label class="radius-control compact" for="radiusSelect"><select id="radiusSelect" aria-label="Sökradie">
         <option value="500">500 m</option><option value="1000">1 km</option><option value="2000" selected>2 km</option><option value="5000">5 km</option><option value="10000">10 km</option><option value="20000">20 km</option>
       </select></label>
+      <details class="filter-panel" id="filterPanel">
+        <summary>⚙︎ FILTER</summary>
+        <div class="filter-popover">
+          <div class="filter-head"><div><div class="kicker">ANPASSA</div><h3>Vad är du sugen på?</h3></div><button class="help-btn" id="helpBtn" aria-label="Så funkar Kroogle">?</button></div>
+          <section class="filters" aria-label="Filter">
+            <button class="chip active" data-filter="all">Alla</button>
+            <button class="chip" data-filter="casual">Avslappnat</button>
+            <button class="chip" data-filter="open">Öppet nu</button>
+            <button class="chip" data-filter="4.5">4,5+</button>
+            <button class="chip" data-filter="budget">Prisvärd</button>
+            <button class="chip" data-filter="michelin">Michelin</button>
+          </section>
+          <div class="cuisine-row">
+            <label for="cuisineSelect">Kök</label>
+            <select id="cuisineSelect"><option value="all">Alla kök</option></select>
+          </div>
+        </div>
+      </details>
     </div>
 
-    <section class="filters" aria-label="Filter">
-      <button class="chip active" data-filter="all">Alla</button>
-      <button class="chip" data-filter="casual">Avslappnat</button>
-      <button class="chip" data-filter="open">Öppet nu</button>
-      <button class="chip" data-filter="4.5">4,5+</button>
-      <button class="chip" data-filter="budget">Prisvärd</button>
-      <button class="chip" data-filter="michelin">Michelin</button>
-    </section>
-    <div class="cuisine-row">
-      <label for="cuisineSelect">Kök</label>
-      <select id="cuisineSelect"><option value="all">Alla kök</option></select>
-    </div>
-
-    <div class="statusrow"><span id="progressText">Hämtar krogar…</span><button id="refreshBtn" class="tiny">NY MIX</button></div>
+    <div class="statusrow"><span id="progressText">Hämtar krogar…</span><button id="refreshBtn" class="tiny">↻ NY MIX</button></div>
     <section class="stage"><div class="deck" id="deck"><div class="loading">Letar efter bra krogar…</div></div></section>
     <div class="actions"><button class="action pass" id="passBtn">✕</button><button class="action info" id="infoBtn">i</button><button class="action like" id="likeBtn">♥</button></div>
     <div class="hint">Swipe vänster för pass · höger för spara</div>
